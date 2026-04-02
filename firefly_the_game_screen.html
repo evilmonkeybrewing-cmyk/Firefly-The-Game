@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firefly: The Game — Captain's Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --rust: #8b3a12; --rust-dark: #5c2008; --rust-light: #c45a20;
+    --sky: #1a3a5c; --sky-light: #2a5a8c; --tan: #c8a870;
+    --parch: #f5ede0; --parch-dark: #e8dcc8;
+    --ink: #1a1008; --ink-mid: #3a2818; --ink-muted: #7a6040;
+    --green: #1a5a1a;
+    --border: rgba(139,58,18,0.3); --border-strong: rgba(139,58,18,0.6);
+    --section-bg: rgba(245,237,224,0.5);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --rust: #c05820; --rust-dark: #802808; --rust-light: #e07840;
+      --sky: #2a5a8c; --sky-light: #4a80b0; --tan: #c8a060;
+      --parch: #1a1208; --parch-dark: #120e06;
+      --ink: #e8d8b8; --ink-mid: #c0a070; --ink-muted: #907050;
+      --green: #40a040;
+      --border: rgba(192,88,32,0.25); --border-strong: rgba(192,88,32,0.55);
+      --section-bg: rgba(20,12,4,0.5);
+    }
+  }
+
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes rustGlow {
+    0%,100% { text-shadow: 0 0 6px rgba(139,58,18,0.3); }
+    50% { text-shadow: 0 0 20px rgba(196,90,32,0.8), 0 0 40px rgba(139,58,18,0.3); }
+  }
+  @keyframes flyIn {
+    from { opacity:0; letter-spacing: 8px; transform: translateY(-8px); }
+    to   { opacity:1; letter-spacing: 4px; transform: translateY(0); }
+  }
+  @keyframes starTwinkle {
+    0%,100%{opacity:0.3} 50%{opacity:1}
+  }
+  @keyframes subtleFloat {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)}
+  }
+
+  body { background: var(--parch); color: var(--ink); font-family: 'Libre Baskerville', Georgia, serif; }
+
+  .stars {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .star {
+    position: absolute; width: 2px; height: 2px;
+    background: var(--ink-muted); border-radius: 50%;
+    animation: starTwinkle linear infinite;
+  }
+
+  .screen { padding: 10px; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+
+  .screen-header {
+    text-align: center; padding: 10px 0 12px;
+    border-bottom: 2px solid var(--border-strong);
+    margin-bottom: 10px;
+    animation: fadeInUp 0.7s ease both;
+  }
+  .screen-header h1 {
+    font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700;
+    color: var(--rust); letter-spacing: 4px; text-transform: uppercase;
+    animation: flyIn 1s ease both, rustGlow 4s 1s ease-in-out infinite;
+  }
+  .ship-icon {
+    display: inline-block;
+    animation: subtleFloat 3s ease-in-out infinite;
+  }
+  .screen-header p {
+    font-size: 12px; color: var(--ink-muted); margin-top: 3px; font-style: italic;
+    animation: fadeInUp 0.9s 0.3s ease both;
+  }
+
+  .tabs { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+  .tab-btn {
+    font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 1px; padding: 5px 12px; background: var(--section-bg);
+    border: 1px solid var(--border-strong); border-radius: 2px;
+    color: var(--ink-muted); cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+  }
+  .tab-btn:hover { color: var(--rust); border-color: var(--rust); transform: translateY(-1px); }
+  .tab-btn.active { background: var(--rust); color: var(--parch); border-color: var(--rust-dark); }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeInUp 0.3s ease both; }
+
+  .col-grid { display: grid; gap: 9px; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--section-bg); border: 1px solid var(--border);
+    border-radius: 4px; padding: 9px 11px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover { box-shadow: 0 2px 12px rgba(139,58,18,0.15); transform: translateY(-1px); }
+  .card h3 {
+    font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--rust); letter-spacing: 2px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 7px;
+  }
+
+  .rule-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 2.5px 0; border-bottom: 1px dashed var(--border);
+    font-size: 12.5px; gap: 6px;
+  }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-label { color: var(--rust-light); font-weight: bold; flex-shrink: 0; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.5px; }
+  .rule-val { color: var(--ink-mid); text-align: right; font-size: 12px; }
+
+  .step-list { list-style: none; }
+  .step-list li {
+    display: flex; gap: 7px; padding: 3px 0;
+    border-bottom: 1px dashed var(--border); font-size: 12.5px;
+    align-items: flex-start; line-height: 1.4;
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    font-family: 'Oswald', sans-serif; font-size: 10px; color: var(--parch);
+    background: var(--rust); border-radius: 2px;
+    width: 17px; height: 17px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .warn-box {
+    background: var(--parch-dark); border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--rust); border-radius: 3px;
+    padding: 6px 9px; font-size: 12.5px; color: var(--ink-mid);
+    margin-top: 5px; line-height: 1.5; font-style: italic;
+  }
+  .warn-box strong { color: var(--rust-light); font-style: normal; }
+
+  .sky-box {
+    background: var(--parch-dark); border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--sky-light); border-radius: 3px;
+    padding: 6px 9px; font-size: 12.5px; color: var(--ink-mid);
+    margin-top: 5px; line-height: 1.5;
+  }
+  .sky-box strong { color: var(--sky-light); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+  .note { font-size: 11px; color: var(--ink-muted); font-style: italic; margin-top: 3px; line-height: 1.4; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th { font-family: 'Oswald', sans-serif; font-size: 10px; color: var(--rust); text-align: left; padding: 3px 5px; border-bottom: 1px solid var(--border-strong); letter-spacing: 0.5px; }
+  .data-table td { padding: 3px 5px; border-bottom: 1px dashed var(--border); color: var(--ink-mid); vertical-align: top; line-height: 1.3; }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .contact-item {
+    padding: 5px 8px; background: var(--parch-dark);
+    border: 1px solid var(--border); border-radius: 3px;
+    border-left: 2px solid var(--rust);
+    transition: border-left-color 0.2s, transform 0.2s;
+  }
+  .contact-item:hover { border-left-color: var(--sky-light); transform: translateX(2px); }
+  .contact-name { font-family: 'Oswald', sans-serif; font-size: 10px; color: var(--rust); letter-spacing: 0.5px; display: block; }
+  .contact-desc { color: var(--ink-muted); font-size: 11px; margin-top: 1px; }
+
+  @media (max-width: 700px) { .cols-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .cols-2, .cols-3, .contact-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="screen">
+  <div class="screen-header">
+    <h1><span class="ship-icon">🚀</span> Firefly: The Game — Captain's Reference</h1>
+    <p>Find a crew. Find a job. Keep flying. — Quick rules for running the 'Verse</p>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panels"></div>
+</div>
+
+<script>
+// Generate twinkling stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 40; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.left = Math.random() * 100 + '%';
+  s.style.top = Math.random() * 100 + '%';
+  s.style.animationDuration = (2 + Math.random() * 4) + 's';
+  s.style.animationDelay = (Math.random() * 4) + 's';
+  s.style.opacity = Math.random() * 0.5;
+  starsEl.appendChild(s);
+}
+
+const panels = {
+  turn: `<div class="col-grid cols-3">
+    <div class="card"><h3>Your Turn — Two Actions</h3>
+      <ul class="step-list">
+        <li><span class="step-num">1</span><span>Choose 2 actions from: <strong>Fly, Buy, Deal, Work</strong>. You may take the same action twice.</span></li>
+        <li><span class="step-num">2</span><span><strong>FLY:</strong> Mosey (1 sector, free) or Full Burn (up to drive core max, costs 1 Fuel). Draw Nav cards for each sector entered on Full Burn.</span></li>
+        <li><span class="step-num">3</span><span><strong>BUY:</strong> At a Supply Planet only. Draw 3 cards from that planet's Supply deck; buy up to 2. Pay $100/crew for Shore Leave.</span></li>
+        <li><span class="step-num">4</span><span><strong>DEAL:</strong> At a Contact Planet only. Draw 3 Job cards from that Contact's deck; keep up to 2 (max 3 jobs total in hand). Discard the rest.</span></li>
+        <li><span class="step-num">5</span><span><strong>WORK:</strong> Attempt the job in your hand that matches your current location. Follow the job card's instructions and Misbehave cards.</span></li>
+      </ul>
+      <div class="warn-box"><strong>MAX 3 JOB CARDS:</strong> You can never hold more than 3 job cards. When you draw more, you must discard down immediately.</div>
+    </div>
+    <div class="card"><h3>Flying the 'Verse</h3>
+      <div class="rule-row"><span class="rule-label">MOSEY</span><span class="rule-val">Move 1 sector. No fuel spent. No Nav card drawn.</span></div>
+      <div class="rule-row"><span class="rule-label">FULL BURN</span><span class="rule-val">Move up to drive core max sectors. Spend 1 Fuel. Draw 1 Nav card per sector entered.</span></div>
+      <div class="rule-row"><span class="rule-label">FULL STOP</span><span class="rule-val">Nav card result — ship stops, no further movement this action.</span></div>
+      <div class="rule-row"><span class="rule-label">EVADE</span><span class="rule-val">Nav card result — move to adjacent sector, no extra Nav card drawn.</span></div>
+      <div class="rule-row"><span class="rule-label">ALERT TOKENS</span><span class="rule-val">Roll d6. If result ≤ # of tokens = threat ship arrives in your sector.</span></div>
+      <div class="rule-row"><span class="rule-label">ALLIANCE SPACE</span><span class="rule-val">Blue-bordered. Alliance Cruiser patrols here. Warrants checked.</span></div>
+      <div class="rule-row"><span class="rule-label">BORDER SPACE</span><span class="rule-val">Yellow-bordered. Either ship can enter. Corvette can reach anywhere.</span></div>
+      <div class="rule-row"><span class="rule-label">REAVER SPACE</span><span class="rule-val">Red-bordered near Miranda. 3 alert tokens always active.</span></div>
+      <div class="rule-row"><span class="rule-label">CRAZY IVAN</span><span class="rule-val">If you have Pilot + Mechanic: spend 1 Fuel and Evade a Reaver Contact.</span></div>
+      <div class="sky-box"><strong>BOTH ALERTS:</strong> If you enter a sector with Alliance AND Reaver alerts, resolve Alliance first. If Alliance arrives, discard the Reaver alert tokens.</div>
+    </div>
+    <div class="card"><h3>Setup Checklist</h3>
+      <ul class="step-list">
+        <li><span class="step-num">1</span><span>Choose a Story Card. Shuffle and set up the board as instructed.</span></li>
+        <li><span class="step-num">2</span><span>Each player picks a Captain (Leader) and a Ship. Place Alliance Cruiser at Londinium. Place Reaver Cutter at top-right.</span></li>
+        <li><span class="step-num">3</span><span>Each player gets: $3,000 starting credits, 6 Fuel, 2 Parts.</span></li>
+        <li><span class="step-num">4</span><span>Each player draws starting Job cards from Contacts (Patience, Badger, Niska by default). Keep up to 3, discard the rest.</span></li>
+        <li><span class="step-num">5</span><span>Players pick starting sectors in reverse order. No two ships start in the same sector.</span></li>
+        <li><span class="step-num">6</span><span>Turn 3 Bounty cards face-up. Play begins!</span></li>
+      </ul>
+      <div class="rule-row" style="margin-top:6px"><span class="rule-label">STARTING CREDITS</span><span class="rule-val">Pay for crew from starting $3,000 before play begins</span></div>
+      <div class="rule-row"><span class="rule-label">GOAL</span><span class="rule-val">Complete scenario goals on Story Card to win</span></div>
+    </div>
+  </div>`,
+
+  threats: `<div class="col-grid cols-3">
+    <div class="card"><h3>Alliance Cruiser</h3>
+      <div class="rule-row"><span class="rule-label">STARTS AT</span><span class="rule-val">Londinium (Alliance Space)</span></div>
+      <div class="rule-row"><span class="rule-label">MOVES WHEN</span><span class="rule-val">Alliance Cruiser Nav card drawn — moves to active player's sector</span></div>
+      <div class="rule-row"><span class="rule-label">ALSO MOVES</span><span class="rule-val">When Alliance Alert token triggers</span></div>
+      <div class="rule-row"><span class="rule-label">CONTACT EVENT</span><span class="rule-val">Searched for Warrants, cargo, contraband, and fugitives</span></div>
+      <div class="rule-row"><span class="rule-label">WANTED?</span><span class="rule-val">Cargo, contraband, passengers & fugitives taken. Warrant removed.</span></div>
+      <div class="rule-row"><span class="rule-label">LEGAL SHIPS</span><span class="rule-val">Ignore Cruiser encounters UNLESS you draw Alliance Cruiser/Corvette Nav card while Full Burning.</span></div>
+      <div class="divider"></div>
+      <div class="rule-row"><span class="rule-label">CORVETTE</span><span class="rule-val">Reaches any sector on the map. Appears in Border/Rim Space where Cruiser can't go.</span></div>
+      <div class="warn-box" style="margin-top:5px"><strong>SNITCH:</strong> Some Nav cards let you move the Alliance or Reaver ships — the player to your RIGHT makes that call when it's not your turn.</div>
+    </div>
+    <div class="card"><h3>Reaver Cutter</h3>
+      <div class="rule-row"><span class="rule-label">STARTS AT</span><span class="rule-val">Top-right corner of board (Reaver Space)</span></div>
+      <div class="rule-row"><span class="rule-label">MOVES WHEN</span><span class="rule-val">Reaver Cutter Nav card drawn — moves to active player's sector</span></div>
+      <div class="rule-row"><span class="rule-label">CRAZY IVAN</span><span class="rule-val">Pilot + Mechanic on board: spend 1 Fuel, Evade. Escapes Reaver Contact.</span></div>
+      <div class="rule-row"><span class="rule-label">NO CRAZY IVAN</span><span class="rule-val">Lose all Passengers and Fugitives (including Bound). Make Fight 8 test:</span></div>
+      <div class="rule-row"><span class="rule-label">Fight 8: 1–7</span><span class="rule-val">Kill 2 Crew members</span></div>
+      <div class="rule-row"><span class="rule-label">Fight 8: 8+</span><span class="rule-val">Kill 1 Crew member</span></div>
+      <div class="rule-row"><span class="rule-label">REAVER SPACE</span><span class="rule-val">3 alert tokens permanently near Miranda — always active.</span></div>
+      <div class="warn-box" style="margin-top:5px"><strong>HOPEFULLY FULL:</strong> Reavers kill crew. Losing crew mid-job means re-assigning or failing. Avoid Reaver Space unless the pay is worth it.</div>
+    </div>
+    <div class="card"><h3>Warrants &amp; The Law</h3>
+      <div class="rule-row"><span class="rule-label">WARRANT ISSUED</span><span class="rule-val">From failing certain jobs, Misbehave cards, or specific story events</span></div>
+      <div class="rule-row"><span class="rule-label">EFFECT</span><span class="rule-val">Alliance Cruiser contact = seized contraband, cargo, passengers & fugitives. Warrant removed.</span></div>
+      <div class="rule-row"><span class="rule-label">SOLID WITH CONTACT</span><span class="rule-val">Complete jobs for a Contact to become Solid — additional benefits and better job access</span></div>
+      <div class="rule-row"><span class="rule-label">BOTCHED JOB</span><span class="rule-val">Failure on a Work action — no pay, may keep trying next turn</span></div>
+      <div class="rule-row"><span class="rule-label">WARRANT RESULT</span><span class="rule-val">Failure + take a Warrant token AND discard the job card</span></div>
+      <div class="rule-row"><span class="rule-label">DISGRUNTLED</span><span class="rule-val">Crew doing Immoral jobs or unpaid — place Disgruntled token. Too many = they leave.</span></div>
+      <div class="rule-row"><span class="rule-label">HIRING AWAY</span><span class="rule-val">Another player in same sector can hire your Disgruntled crew if they have the cash.</span></div>
+      <div class="sky-box" style="margin-top:5px"><strong>SELL GEAR:</strong> Return any market planet to sell gear at 50% of purchase price. Goes to that supply deck's discard pile.</div>
+    </div>
+  </div>`,
+
+  jobs: `<div class="col-grid cols-3">
+    <div class="card"><h3>Working Jobs</h3>
+      <ul class="step-list">
+        <li><span class="step-num">1</span><span>Must be at the <strong>correct planet/location</strong> listed on the job card.</span></li>
+        <li><span class="step-num">2</span><span>Assign crew from your ship to fill the job's <strong>skill requirements</strong>. Crew must be equipped with relevant Gear.</span></li>
+        <li><span class="step-num">3</span><span>Crew on board (not assigned) are <strong>unaffected</strong> by Misbehave cards and skill tests.</span></li>
+        <li><span class="step-num">4</span><span>Draw <strong>Misbehave cards</strong> as directed by the job. Some have choices (Option A or B). Fail the requirement = forced bad option.</span></li>
+        <li><span class="step-num">5</span><span><strong>Skill Test:</strong> Roll d6 + skill points. Meet or beat difficulty. Crew + Gear skill points add together.</span></li>
+        <li><span class="step-num">6</span><span>If job is complete: collect pay. <strong>Pay each Crew member</strong> their wage or place Disgruntled token on them.</span></li>
+      </ul>
+      <div class="warn-box"><strong>BOTCHED vs WARRANT:</strong> Botched = fail, can retry next turn. Warrant = fail + get a warrant token + job discarded. Read the card carefully.</div>
+    </div>
+    <div class="card"><h3>Crew, Gear &amp; Skills</h3>
+      <div class="rule-row"><span class="rule-label">SKILL POINTS</span><span class="rule-val">From both Crew AND Gear cards. Add together for skill tests.</span></div>
+      <div class="rule-row"><span class="rule-label">GEAR LIMIT</span><span class="rule-val">Each crew/leader can only carry 1 Gear card. Uncarried gear stays on ship (can't be used for jobs).</span></div>
+      <div class="rule-row"><span class="rule-label">KEYWORDS</span><span class="rule-val">Specialized gear types. Some Misbehave cards require specific keywords (e.g. Explosives, Medical).</span></div>
+      <div class="rule-row"><span class="rule-label">DISGRUNTLED</span><span class="rule-val">Crew gets a token when: not paid, asked to do Immoral job, or certain Misbehave outcomes.</span></div>
+      <div class="rule-row"><span class="rule-label">MORAL FLAG</span><span class="rule-val">Some crew (like Mal, Monty) have Moral flags. Immoral jobs cause Disgruntled even on success.</span></div>
+      <div class="rule-row"><span class="rule-label">THRILLIN' HEROICS</span><span class="rule-val">Roll a 6 (Firefly symbol) = bonus roll. Keep rolling as long as you roll 6s!</span></div>
+      <div class="sky-box" style="margin-top:5px"><strong>SHOWDOWN:</strong> Both sides pick a skill and roll d6. Higher total wins. Used when players contest each other directly.</div>
+    </div>
+    <div class="card"><h3>Ship Upgrades &amp; Fuel</h3>
+      <div class="rule-row"><span class="rule-label">DRIVE CORE</span><span class="rule-val">Only 1 at a time. Determines Full Burn range. Replace old one when buying new.</span></div>
+      <div class="rule-row"><span class="rule-label">UPGRADE SLOTS</span><span class="rule-val">Ship has limited slots. Can discard an upgrade to make room at any time.</span></div>
+      <div class="rule-row"><span class="rule-label">STASH BOXES</span><span class="rule-val">Stores 2 Fuel, 2 Parts, or 1 of each. Protects from Alliance searches and piracy.</span></div>
+      <div class="rule-row"><span class="rule-label">FUEL USE</span><span class="rule-val">1 Fuel per Full Burn action. Shore Leave costs $100/crew member.</span></div>
+      <div class="rule-row"><span class="rule-label">PARTS</span><span class="rule-val">Used for ship repairs and certain skill tests. Stock up before heading Rimward.</span></div>
+      <div class="rule-row"><span class="rule-label">CARGO/CONTRABAND</span><span class="rule-val">Cargo = legal. Contraband = illegal. Alliance takes contraband if they board you with a Warrant.</span></div>
+      <div class="rule-row"><span class="rule-label">PASSENGERS/FUGITIVES</span><span class="rule-val">Take up space. Reavers eat them. Alliance takes Fugitives if Warranted.</span></div>
+      <div class="warn-box" style="margin-top:5px"><strong>CAPTAIN KILLED?</strong> Captains can't die normally — they just get a Disgruntled token instead of being killed.</div>
+    </div>
+  </div>`,
+
+  contacts: `<div class="col-grid cols-2">
+    <div class="card"><h3>Contacts</h3>
+      <div class="contact-grid">
+        <div class="contact-item"><span class="contact-name">PATIENCE</span><span class="contact-desc">Magistrate of Whitefall. Rim jobs. Dangerous but pays well. Watch your back.</span></div>
+        <div class="contact-item"><span class="contact-name">BADGER</span><span class="contact-desc">Persephone fence. Border jobs, smuggling. Sneaky and unreliable but accessible.</span></div>
+        <div class="contact-item"><span class="contact-name">NISKA</span><span class="contact-desc">Crime lord. High-pay, high-risk. Has special rules — breaking his jobs has consequences.</span></div>
+        <div class="contact-item"><span class="contact-name">MR. UNIVERSE</span><span class="contact-desc">Tech genius on a moon. Unique jobs involving data, hacking, and communication.</span></div>
+        <div class="contact-item"><span class="contact-name">FANTY &amp; MINGO</span><span class="contact-desc">Twins. Persephone underworld. High-value jobs but often morally questionable.</span></div>
+        <div class="contact-item"><span class="contact-name">HIGGINS</span><span class="contact-desc">Canton mudder magnate. Jobs on Higgins' Moon. Often involves labor disputes.</span></div>
+      </div>
+      <div class="sky-box" style="margin-top:8px"><strong>BECOMING SOLID:</strong> Complete jobs for a Contact to become Solid with them. Unlocks extra benefits and may improve their job offers. It's the long game.</div>
+    </div>
+    <div class="card"><h3>Captains &amp; Starting Ships</h3>
+      <table class="data-table">
+        <tr><th>Captain</th><th>Ship</th><th>Notes</th></tr>
+        <tr><td>Malcolm Reynolds</td><td>Serenity</td><td>Moral flag. Starts with Zoe (Soldier $300), Wash (Pilot $200), Bester (Mechanic $100).</td></tr>
+        <tr><td>Sash</td><td>S.S. Walden</td><td>Starts with Jesse (Pilot $200), Billy (Mechanic $200), Gun Hand ($100).</td></tr>
+        <tr><td>Monty</td><td>Bonnie Mae</td><td>Loyal crew. Starts with Brigid (Companion $300), Scrapper (Pilot $200), Gun Hand ($100).</td></tr>
+        <tr><td>Early</td><td>Interceptor</td><td>Starts with NO crew. Bounty hunter solo playstyle.</td></tr>
+        <tr><td>Zoe</td><td>Jetwash</td><td>Soldier background. Extra upgrade cost.</td></tr>
+        <tr><td>Corbin</td><td>Firefly (default)</td><td>Starts with Bree, Saffron, Scrapper.</td></tr>
+      </table>
+      <div class="divider"></div>
+      <div class="rule-row"><span class="rule-label">UNCLAIMED SHIPS</span><span class="rule-val">Interceptor free, or pay $700 for Artful Dodger / $800 for Esmeralda</span></div>
+      <div class="rule-row"><span class="rule-label">SELL GEAR</span><span class="rule-val">At any market planet, sell gear at 50% value</span></div>
+      <div class="rule-row"><span class="rule-label">SPACE BAZAAR</span><span class="rule-val">Pick up as many Passengers and/or Fugitives as you want when docked here</span></div>
+    </div>
+  </div>`,
+
+  story: `<div class="col-grid cols-2">
+    <div class="card"><h3>Story Cards</h3>
+      <div class="rule-row"><span class="rule-label">CHOOSE 1</span><span class="rule-val">Pick a Story Card before setup. It defines the win condition and any special rules.</span></div>
+      <div class="rule-row"><span class="rule-label">SETUP CHANGES</span><span class="rule-val">Story cards can modify starting positions, nav decks, available contacts, and board state.</span></div>
+      <div class="rule-row"><span class="rule-label">WIN CONDITION</span><span class="rule-val">Varies by card — complete X jobs, earn X credits, reach specific goals, etc.</span></div>
+      <div class="rule-row"><span class="rule-label">GOAL TOKEN</span><span class="rule-val">Take a Goal token when you complete a story goal step. Collect all to win.</span></div>
+      <div class="divider"></div>
+      <h3 style="margin-top:6px">Bounty Cards</h3>
+      <div class="rule-row"><span class="rule-label">FACE-UP</span><span class="rule-val">Turn 3 Bounty cards face-up at setup. These are active targets in play.</span></div>
+      <div class="rule-row"><span class="rule-label">CLAIMING</span><span class="rule-val">Capture the named target and turn them in at the right location</span></div>
+      <div class="rule-row"><span class="rule-label">BOUNTY PAY</span><span class="rule-val">Significant credit payout. Risky but lucrative. Often requires fight tests.</span></div>
+      <div class="warn-box" style="margin-top:6px"><strong>TIMING MATTERS:</strong> Other players can complete your job's goal before you if they reach the location first. Race to the 'Verse — don't let them beat you to the payout.</div>
+    </div>
+    <div class="card"><h3>Quick Rules Reminders</h3>
+      <div class="rule-row"><span class="rule-label">MOSEY vs FULL BURN</span><span class="rule-val">Mosey: 1 sector, no fuel, no Nav card. Full Burn: max sectors, 1 fuel, Nav card per sector.</span></div>
+      <div class="rule-row"><span class="rule-label">NAV CARD RESULTS</span><span class="rule-val">Full Stop, Evade, Alliance Contact, Reaver Contact, Misbehave, or clear sailing</span></div>
+      <div class="rule-row"><span class="rule-label">SECTORS</span><span class="rule-val">One space on board bounded by colored lines. Named planets = Planetary Sectors.</span></div>
+      <div class="rule-row"><span class="rule-label">SPACE BAZAAR</span><span class="rule-val">Counts as a planet. Can pick up unlimited Passengers/Fugitives per Deal action.</span></div>
+      <div class="rule-row"><span class="rule-label">CORTEX RELAY</span><span class="rule-val">Counts as a planet. Used for certain story card objectives.</span></div>
+      <div class="rule-row"><span class="rule-label">HAVEN TOKEN</span><span class="rule-val">Placed at game start. Cannot be placed in Supply/Contact planet sectors.</span></div>
+      <div class="rule-row"><span class="rule-label">BOUND FUGITIVES</span><span class="rule-val">Lost to Alliance if Warranted. Lost to Reavers. Occupy cargo/crew space.</span></div>
+      <div class="rule-row"><span class="rule-label">TRADE</span><span class="rule-val">Players can trade crew, fuel, parts, cargo, contraband, upgrades and gear freely.</span></div>
+      <div class="rule-row"><span class="rule-label">DISCARD JOBS</span><span class="rule-val">Can discard Job cards from your hand at any time — no penalty.</span></div>
+      <div class="sky-box" style="margin-top:5px"><strong>THE 'VERSE IN A NUTSHELL:</strong> Fly smart, crew right, pick legal or illegal (or both), dodge the Alliance and Reavers, complete the Story Card goals. That's all there is to it. Probably.</div>
+    </div>
+  </div>`
+};
+
+const tabs = [
+  {id:'turn', label:'Turn Structure'},
+  {id:'threats', label:'Alliance & Reavers'},
+  {id:'jobs', label:'Jobs & Crew'},
+  {id:'contacts', label:'Contacts & Captains'},
+  {id:'story', label:'Story Cards & Rules'},
+];
+
+const tc = document.getElementById('tabs');
+const pc = document.getElementById('panels');
+tabs.forEach((t,i) => {
+  const b = document.createElement('button');
+  b.className = 'tab-btn' + (i===0?' active':'');
+  b.textContent = t.label;
+  b.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('p-'+t.id).classList.add('active');
+  };
+  tc.appendChild(b);
+  const p = document.createElement('div');
+  p.className = 'panel' + (i===0?' active':'');
+  p.id = 'p-'+t.id;
+  p.innerHTML = panels[t.id];
+  pc.appendChild(p);
+});
+</script>
+</body>
+</html>
